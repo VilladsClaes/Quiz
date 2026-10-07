@@ -1,0 +1,58 @@
+@model AdminQuestionViewModel
+@{
+    ViewData["Title"] = Model.QuestionId is null ? "Nyt spoergsmaal" : "Rediger spoergsmaal";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Quizzer</a></li>
+        <li class="breadcrumb-item"><a asp-action="Questions" asp-route-id="@Model.QuizId">@Model.QuizTitle</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Spoergsmaal</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">@ViewData["Title"]</h1>
+
+<form asp-action="Question" method="post" class="col-md-9">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="QuizId" />
+    <input type="hidden" asp-for="QuestionId" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label class="form-label" asp-for="Text">Spoergsmaal</label>
+        <textarea class="form-control" asp-for="Text" rows="2" required></textarea>
+        <span asp-validation-for="Text" class="text-danger"></span>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-5">
+            <label class="form-label" asp-for="Type">Type</label>
+            <select class="form-select" asp-for="Type" asp-items="Html.GetEnumSelectList<QuestionType>()"></select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" asp-for="Points">Point</label>
+            <input class="form-control" asp-for="Points" type="number" min="1" max="1000" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" asp-for="TimeLimitSeconds">Tidsgraense (sek., valgfri)</label>
+            <input class="form-control" asp-for="TimeLimitSeconds" type="number" min="1" max="3600" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" asp-for="Choices">Svar</label>
+        <textarea class="form-control font-monospace" asp-for="Choices" rows="6"></textarea>
+        <div class="form-text">
+            <ul class="mb-0 ps-3">
+                <li><strong>Enkeltvalg / flere svar / sandt-falsk / billedvalg:</strong> et svar pr. linje. Saet <code>*</code> foran de rigtige.</li>
+                <li><strong>Kort svar / tal:</strong> skriv de godkendte svar, et pr. linje, med <code>*</code> foran.</li>
+                <li><strong>Rækkefølge:</strong> skriv svarene i den rigtige orden, et pr. linje.</li>
+                <li><strong>Par-match:</strong> skriv <code>venstre|hoejre</code> pr. linje.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Gem spoergsmaal</button>
+    <a class="btn btn-outline-secondary" asp-action="Questions" asp-route-id="@Model.QuizId">Tilbage</a>
+</form>

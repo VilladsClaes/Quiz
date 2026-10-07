@@ -1,0 +1,58 @@
+name: Build og deploy til Simply.com (FTP)
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore QuizApp/QuizApp.csproj
+
+      - name: Skriv appsettings.Production.json fra secrets
+        run: |
+          cat > QuizApp/appsettings.Production.json <<EOF
+          {
+            "ConnectionStrings": {
+              "DefaultConnection": "Server=${{ secrets.DB_HOST }};Port=3306;Database=${{ secrets.DB_DATABASE }};Uid=${{ secrets.DB_USERNAME }};Pwd=${{ secrets.DB_PASSWORD }};"
+            },
+            "Database": {
+              "AutoDetect": "true"
+            },
+            "Logging": {
+              "LogLevel": {
+                "Default": "Information",
+                "Microsoft.AspNetCore": "Warning"
+              }
+            }
+          }
+          EOF
+
+      - name: Publish
+        run: dotnet publish QuizApp/QuizApp.csproj -c Release -o publish
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          protocol: ftp
+          server-dir: /public_html/quiz/
+          local-dir: ./publish/
+          exclude: |
+            **/.git*
+            **/.git*/**

@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Forside";
+}
+
+<div class="p-5 mb-4 bg-light rounded-3 border">
+    <h1 class="display-5 fw-bold">Quiz</h1>
+    <p class="lead">
+        Tag en quiz og se hvor godt du klarer den. Quizzerne kan indeholde mange forskellige
+        spoergsmaaltyper: enkeltvalg, flere svar, sandt/falsk, kort svar, tal, rækkefølge,
+        par-match og billedvalg.
+    </p>
+    <a class="btn btn-primary btn-lg" asp-controller="Quiz" asp-action="Index">Se quizzer</a>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <h2 class="h4">For deltagere</h2>
+        <p>Vaelg en quiz, svar paa spoergsmaalene og aflever med dit navn, e-mail og telefon, saa resultatet kan ses med det samme.</p>
+    </div>
+    <div class="col-md-6">
+        <h2 class="h4">For quiz-master</h2>
+        <p>Log ind i <a asp-controller="Admin" asp-action="Login">administrationen</a> for at oprette og redigere quizzer og spoergsmaal.</p>
+    </div>
+</div>

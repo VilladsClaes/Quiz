@@ -1,0 +1,20 @@
+# .NET
+bin/
+obj/
+publish/
+*.user
+
+# Lokal SQLite-database (bruges kun til udvikling)
+*.db
+*.db-shm
+*.db-wal
+
+# Lokale hemmeligheder
+appsettings.Production.json
+appsettings.Local.json
+.env
+
+# Editor
+.vs/
+.vscode/
+.idea/

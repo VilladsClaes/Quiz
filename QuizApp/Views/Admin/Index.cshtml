@@ -1,0 +1,72 @@
+@model List<Quiz>
+@{
+    ViewData["Title"] = "Administration";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Quizzer</h1>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h5">Opret ny quiz</h2>
+        <form asp-action="Create" method="post" class="row g-2">
+            @Html.AntiForgeryToken()
+            <div class="col-md-4">
+                <input class="form-control" name="title" placeholder="Titel" required maxlength="200" />
+            </div>
+            <div class="col-md-6">
+                <input class="form-control" name="description" placeholder="Kort beskrivelse (valgfri)" maxlength="1000" />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Opret</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table class="table table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Titel</th>
+            <th>Spoergsmaal</th>
+            <th>Status</th>
+            <th class="text-end">Handlinger</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var quiz in Model)
+        {
+            <tr>
+                <td>
+                    <strong>@quiz.Title</strong>
+                    @if (!string.IsNullOrWhiteSpace(quiz.Description))
+                    {
+                        <div class="text-muted small">@quiz.Description</div>
+                    }
+                </td>
+                <td>@quiz.Questions.Count</td>
+                <td>
+                    @if (quiz.IsActive)
+                    {
+                        <span class="badge bg-success">Aktiv</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Skjult</span>
+                    }
+                </td>
+                <td class="text-end text-nowrap">
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Questions" asp-route-id="@quiz.Id">Spoergsmaal</a>
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@quiz.Id">Rediger</a>
+                    <a class="btn btn-sm btn-outline-info" asp-action="Results" asp-route-id="@quiz.Id">Besvarelser</a>
+                    <form asp-action="Delete" asp-route-id="@quiz.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Slet quizzen og alle dens spoergsmaal?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Slet</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

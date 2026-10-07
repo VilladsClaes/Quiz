@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Log ind";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <h1 class="h3 mb-4">Log ind som quiz-master</h1>
+        <form method="post" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="mb-3">
+                <label class="form-label" for="username">Brugernavn</label>
+                <input class="form-control" id="username" name="username" required autocomplete="username" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="password">Adgangskode</label>
+                <input class="form-control" id="password" name="password" type="password" required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn btn-primary">Log ind</button>
+        </form>
+    </div>
+</div>

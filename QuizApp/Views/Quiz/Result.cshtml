@@ -1,0 +1,55 @@
+@model QuizResultViewModel
+@{
+    ViewData["Title"] = "Resultat";
+    var percent = Model.Percent;
+    var badge = percent >= 80 ? "bg-success" : percent >= 50 ? "bg-warning text-dark" : "bg-danger";
+}
+
+<h1 class="mb-3">Resultat: @Model.Quiz.Title</h1>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="h4 mb-1">@Model.Result.ParticipantName</h2>
+                <p class="text-muted mb-0">
+                    Afleveret @Model.Result.CompletedAt.ToLocalTime().ToString("dd-MM-yyyy HH:mm")
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="display-6">@Model.Result.Score / @Model.Result.TotalPoints</div>
+                <span class="badge @badge fs-6">@percent% rigtigt</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h4 mb-3">Gennemgang</h2>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Spoergsmaal</th>
+            <th>Dit svar</th>
+            <th>Rigtigt svar</th>
+            <th class="text-end">Point</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Model.Rows)
+        {
+            <tr>
+                <td>@row.Question.Text</td>
+                <td>@(string.IsNullOrWhiteSpace(row.GivenText) ? "(intet svar)" : row.GivenText)</td>
+                <td>@row.CorrectText</td>
+                <td class="text-end">
+                    <span class="@(row.IsCorrect ? "text-success" : "text-danger")">
+                        @row.Points / @row.MaxPoints
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-outline-primary" asp-action="Index">Tilbage til quizzer</a>

@@ -1,0 +1,28 @@
+@model QuizListViewModel
+@{
+    ViewData["Title"] = "Quizzer";
+}
+
+<h1 class="mb-4">Vaelg en quiz</h1>
+
+@if (Model.Quizzes.Count == 0)
+{
+    <div class="alert alert-info">Der er endnu ingen aktive quizzer.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var quiz in Model.Quizzes)
+        {
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h2 class="h5 card-title">@quiz.Title</h2>
+                        <p class="card-text flex-grow-1">@quiz.Description</p>
+                        <a class="btn btn-primary align-self-start" asp-action="Play" asp-route-id="@quiz.Id">Start quiz</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

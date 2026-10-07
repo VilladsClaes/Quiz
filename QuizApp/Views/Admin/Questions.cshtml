@@ -1,0 +1,52 @@
+@model Quiz
+@{
+    ViewData["Title"] = "Spoergsmaal";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Quizzer</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Spoergsmaal i &quot;@Model.Title&quot;</h1>
+    <a class="btn btn-primary" asp-action="Question" asp-route-id="@Model.Id">Nyt spoergsmaal</a>
+</div>
+
+@if (!Model.Questions.Any())
+{
+    <div class="alert alert-info">Der er endnu ingen spoergsmaal i denne quiz.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Spoergsmaal</th>
+                <th>Type</th>
+                <th>Point</th>
+                <th class="text-end">Handlinger</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var q in Model.Questions.OrderBy(q => q.Id))
+            {
+                <tr>
+                    <td>@q.Text</td>
+                    <td><span class="badge bg-secondary">@q.Type</span></td>
+                    <td>@q.Points</td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-secondary" asp-action="Question" asp-route-id="@Model.Id" asp-route-questionId="@q.Id">Rediger</a>
+                        <form asp-action="DeleteQuestion" asp-route-id="@Model.Id" asp-route-questionId="@q.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Slet spoergsmaalet?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Slet</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

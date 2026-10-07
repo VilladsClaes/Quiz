@@ -1,0 +1,188 @@
+@model QuizPlayViewModel
+@{
+    ViewData["Title"] = Model.Quiz.Title;
+
+    string Shuffled(IEnumerable<AnswerChoice> choices, int questionId)
+    {
+        // Blander svarmulighederne deterministisk pr. spoergsmaal, saa raekkefoelgen
+        // ikke afsloerer det korrekte svar (vigtigt for rækkefølge-opgaver).
+        var list = choices.OrderBy(c => (c.Id * 2654435761u + (uint)questionId * 40503u) % 100000u).ToList();
+        return string.Join(",", list.Select(c => c.Id));
+    }
+}
+
+<h1 class="mb-1">@Model.Quiz.Title</h1>
+@if (!string.IsNullOrWhiteSpace(Model.Quiz.Description))
+{
+    <p class="text-muted">@Model.Quiz.Description</p>
+}
+
+<form asp-action="Submit" asp-route-id="@Model.Quiz.Id" method="post" id="quizForm" novalidate>
+    @Html.AntiForgeryToken()
+
+    @{ var number = 0; }
+    @foreach (var q in Model.Questions)
+    {
+        number++;
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <h2 class="h5">@number. @q.Text</h2>
+                    <span class="badge bg-secondary align-self-start">@q.Points point</span>
+                </div>
+
+                @switch (q.Type)
+                {
+                    case QuestionType.MultipleChoiceSingleAnswer:
+                        foreach (var c in q.AnswerChoices.OrderBy(c => c.OrderIndex))
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="choice_@q.Id" id="c_@c.Id" value="@c.Id" />
+                                <label class="form-check-label" for="c_@c.Id">@c.Text</label>
+                            </div>
+                        }
+                        break;
+
+                    case QuestionType.TrueFalse:
+                        foreach (var c in q.AnswerChoices.OrderBy(c => c.OrderIndex))
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="choice_@q.Id" id="c_@c.Id" value="@c.Id" />
+                                <label class="form-check-label" for="c_@c.Id">@c.Text</label>
+                            </div>
+                        }
+                        break;
+
+                    case QuestionType.ImageChoice:
+                        <div class="row g-2">
+                            @foreach (var c in q.AnswerChoices.OrderBy(c => c.OrderIndex))
+                            {
+                                <div class="col-sm-4">
+                                    <label class="border rounded p-2 d-block h-100" for="c_@c.Id" style="cursor:pointer">
+                                        <input class="form-check-input me-2" type="radio" name="choice_@q.Id" id="c_@c.Id" value="@c.Id" />
+                                        @if (!string.IsNullOrWhiteSpace(c.ImageUrl))
+                                        {
+                                            <img src="@c.ImageUrl" alt="@c.Text" class="img-fluid d-block mb-1" />
+                                        }
+                                        <span>@c.Text</span>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                        break;
+
+                    case QuestionType.MultipleChoiceMultipleAnswers:
+                        <p class="text-muted small mb-2">Der kan vaere flere rigtige svar.</p>
+                        foreach (var c in q.AnswerChoices.OrderBy(c => c.OrderIndex))
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="choices_@q.Id" id="c_@c.Id" value="@c.Id" />
+                                <label class="form-check-label" for="c_@c.Id">@c.Text</label>
+                            </div>
+                        }
+                        break;
+
+                    case QuestionType.ShortAnswer:
+                        <input class="form-control" type="text" name="q_@q.Id" autocomplete="off" />
+                        break;
+
+                    case QuestionType.NumericAnswer:
+                        <input class="form-control" type="text" inputmode="decimal" name="q_@q.Id" autocomplete="off" />
+                        break;
+
+                    case QuestionType.Ordering:
+                        var order = Shuffled(q.AnswerChoices, q.Id);
+                        <p class="text-muted small mb-2">Brug pilene til at saette raekkefoelgen.</p>
+                        <input type="hidden" name="order_@q.Id" id="order_@q.Id" value="@order" />
+                        <ul class="list-group ordering" data-target="order_@q.Id" id="olist_@q.Id">
+                            @foreach (var c in q.AnswerChoices.OrderBy(c => (c.Id * 2654435761u + (uint)q.Id * 40503u) % 100000u))
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center" data-id="@c.Id">
+                                    <span>@c.Text</span>
+                                    <span>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary move-up" aria-label="Op">&uarr;</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary move-down" aria-label="Ned">&darr;</button>
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+                        break;
+
+                    case QuestionType.MatchingPairs:
+                        var rights = q.AnswerChoices
+                            .Select(c => QuizScoring.SplitPair(c.Text).Right)
+                            .OrderBy(r => r.GetHashCode() * 31 + q.Id)
+                            .ToList();
+                        @foreach (var left in q.AnswerChoices.OrderBy(c => c.OrderIndex))
+                        {
+                            <div class="row mb-2 align-items-center">
+                                <div class="col-sm-4"><strong>@QuizScoring.SplitPair(left.Text).Left</strong></div>
+                                <div class="col-sm-1 text-center">&rarr;</div>
+                                <div class="col-sm-5">
+                                    <select class="form-select" name="match_@q.Id@("_")@left.Id">
+                                        <option value="">-- vaelg --</option>
+                                        @foreach (var r in rights)
+                                        {
+                                            <option value="@r">@r</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        }
+                        break;
+                }
+            </div>
+        </div>
+    }
+
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <h2 class="h5">Dine oplysninger</h2>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="ParticipantName">Navn *</label>
+                    <input class="form-control" id="ParticipantName" name="ParticipantName" required maxlength="100" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="Email">E-mail</label>
+                    <input class="form-control" id="Email" name="Email" type="email" maxlength="200" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="Phone">Telefon</label>
+                    <input class="form-control" id="Phone" name="Phone" maxlength="200" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg mb-5">Aflever besvarelse</button>
+</form>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('ul.ordering').forEach(function (list) {
+            var hidden = document.getElementById(list.dataset.target);
+
+            function sync() {
+                hidden.value = Array.prototype.map.call(
+                    list.querySelectorAll('li'),
+                    function (li) { return li.dataset.id; }
+                ).join(',');
+            }
+
+            list.addEventListener('click', function (e) {
+                var btn = e.target.closest('button');
+                if (!btn) { return; }
+                var li = btn.closest('li');
+                if (btn.classList.contains('move-up') && li.previousElementSibling) {
+                    list.insertBefore(li, li.previousElementSibling);
+                } else if (btn.classList.contains('move-down') && li.nextElementSibling) {
+                    list.insertBefore(li.nextElementSibling, li);
+                }
+                sync();
+            });
+
+            sync();
+        });
+    </script>
+}

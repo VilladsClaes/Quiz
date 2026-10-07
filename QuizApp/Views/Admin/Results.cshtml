@@ -1,0 +1,44 @@
+@model Quiz
+@{
+    ViewData["Title"] = "Besvarelser";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Quizzer</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">Besvarelser: @Model.Title</h1>
+
+@if (!Model.Results.Any())
+{
+    <div class="alert alert-info">Der er endnu ingen besvarelser.</div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Deltager</th>
+                <th>E-mail</th>
+                <th>Telefon</th>
+                <th>Score</th>
+                <th>Tidspunkt</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Results.OrderByDescending(r => r.CompletedAt))
+            {
+                <tr>
+                    <td>@r.ParticipantName</td>
+                    <td>@r.Email</td>
+                    <td>@r.Phone</td>
+                    <td>@r.Score / @r.TotalPoints</td>
+                    <td>@r.CompletedAt.ToLocalTime().ToString("dd-MM-yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
