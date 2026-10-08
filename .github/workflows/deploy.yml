@@ -39,6 +39,7 @@ jobs:
             "ConnectionStrings": {
               "DefaultConnection": "Server=${{ secrets.DB_HOST }};Port=3306;Database=${{ secrets.DB_DATABASE }};Uid=${{ secrets.DB_USERNAME }};Pwd=${{ secrets.DB_PASSWORD }};"
             },
+            "PathBase": "/quiz",
             "Database": {
               "AutoDetect": "true"
             },

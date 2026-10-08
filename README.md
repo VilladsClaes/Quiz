@@ -49,6 +49,11 @@ Kilder:
 - <https://www.simply.com/en/support/faq/asp/361-deploy-net-with-self-contained-deployment-scd/>
 - <https://www.simply.com/en/support/faq/asp/827-multiple-asp-net-core-5-apps-on-the-same-web-hosting/>
 
+**Fejlsoegning:** Kan appen ikke naa databasen ved opstart, viser `/quiz` selve
+fejlbeskeden som tekst i stedet for en generisk IIS-500. Derudover skriver IIS
+appens konsol-output til `/public_html/quiz/logs/stdout_*.log` (slaaet til i
+`QuizApp/web.config`). `PathBase` (`/quiz`) saettes i `appsettings.Production.json`.
+
 Filerne lægges i `/public_html/quiz/`, som er webroden for `villadsclaes.dk/quiz`.
 SCD-publish fylder ca. 107 MB, saa foerste FTP-upload tager et par minutter -
 efterfoelgende deploys sender kun det aendrede.

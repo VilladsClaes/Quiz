@@ -69,8 +69,13 @@ var app = builder.Build();
 // Database init: migreringer paa MySQL (produktion) og EnsureCreated paa SQLite
 // (lokal udvikling), efterfulgt af seed af admin-bruger og eksempelquizzer.
 // ---------------------------------------------------------------------------
-using (var scope = app.Services.CreateScope())
+// Fejler det (fx forkert DB-adgang paa webhotellet), lader vi appen starte
+// alligevel og viser fejlen, i stedet for at processen doer og IIS kun svarer
+// med en generisk 500.
+Exception? startupError = null;
+try
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<QuizDbContext>();
     if (db.Database.IsSqlite())
     {
@@ -82,6 +87,34 @@ using (var scope = app.Services.CreateScope())
     }
 
     SeedData.EnsureSeeded(db, app.Configuration, app.Logger);
+}
+catch (Exception ex)
+{
+    startupError = ex;
+    app.Logger.LogCritical(ex, "Database-initialisering fejlede");
+}
+
+if (startupError is not null)
+{
+    app.Run(async context =>
+    {
+        // 200, saa webhotellets egne fejlsider ikke erstatter beskeden.
+        context.Response.ContentType = "text/plain; charset=utf-8";
+        var message = "Appen kunne ikke initialisere databasen:\n";
+        for (var ex = startupError; ex is not null; ex = ex.InnerException)
+        {
+            message += $"\n{ex.GetType().FullName}: {ex.Message}";
+        }
+        await context.Response.WriteAsync(message);
+    });
+}
+
+// Ligger appen i en undermappe (fx /quiz) uden at IIS selv saetter stien,
+// fjernes den her, saa routing og links virker.
+var pathBase = app.Configuration["PathBase"];
+if (!string.IsNullOrWhiteSpace(pathBase))
+{
+    app.UsePathBase(pathBase);
 }
 
 if (!app.Environment.IsDevelopment())
