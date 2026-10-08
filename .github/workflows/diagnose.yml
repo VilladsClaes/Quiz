@@ -1,6 +1,6 @@
-name: Diagnose /quiz paa webhotellet
+name: Diagnose quiz.villadsclaes.dk
 
-# Koeres manuelt (Actions -> Diagnose -> Run workflow). Kalder /quiz, saa IIS
+# Koeres manuelt (Actions -> Diagnose -> Run workflow). Kalder siden, saa IIS
 # forsoeger at starte appen, og henter derefter filliste og stdout-log via FTP.
 
 on:
@@ -10,19 +10,25 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     env:
-      FTP: ftp://${{ secrets.FTP_HOST }}/public_html/quiz
+      FTP_ROOT: ftp://${{ secrets.FTP_HOST }}
+      FTP: ftp://${{ secrets.FTP_HOST }}/quiz.villadsclaes.dk
       FTP_AUTH: ${{ secrets.FTP_USER }}:${{ secrets.FTP_PASSWORD }}
       UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36
     steps:
       - name: Kald siden
         run: |
-          for p in /quiz/ /quiz/Quiz; do
-            curl -s -A "$UA" -o /dev/null -w "$p %{http_code}\n" "https://villadsclaes.dk$p" || true
+          for p in / /Quiz /css/site.css; do
+            curl -s -A "$UA" -o /dev/null -w "$p %{http_code}\n" "https://quiz.villadsclaes.dk$p" || true
           done
+          curl -s -A "$UA" "https://quiz.villadsclaes.dk/" | head -c 600 || true
+          echo
           sleep 15
 
-      - name: Filer i /public_html/quiz
-        run: curl -s --user "$FTP_AUTH" "$FTP/" --list-only | grep -v '\.dll$' | sort
+      - name: Mapper i FTP-roden
+        run: curl -s --user "$FTP_AUTH" "$FTP_ROOT/" --list-only | sort
+
+      - name: Filer paa sitet
+        run: curl -s --user "$FTP_AUTH" "$FTP/" --list-only | grep -v '\.dll$' | sort || true
 
       - name: stdout-log
         run: |
