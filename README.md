@@ -39,7 +39,7 @@ installeret **op til .NET 4.8**. Nyere .NET og .NET Core kan alligevel koere, me
 Derfor goer workflowet to ting, som ikke maa aendres uden grund:
 
 1. **Self-contained publish til `win-x86`** - den runtime udbyderen anbefaler.
-   Uden SCD starter appen ikke, og IIS svarer `500` paa alle stier under `/quiz`.
+   Uden SCD starter appen ikke, og IIS svarer `500` paa alle stier.
 2. **`OutOfProcess` hosting** (`<AspNetCoreHostingModel>` i `QuizApp.csproj`).
    Et webhotel har kun een app-pool, saa InProcess (standard fra .NET 5) kan ikke
    dele plaen med resten af sitet.
@@ -49,12 +49,15 @@ Kilder:
 - <https://www.simply.com/en/support/faq/asp/361-deploy-net-with-self-contained-deployment-scd/>
 - <https://www.simply.com/en/support/faq/asp/827-multiple-asp-net-core-5-apps-on-the-same-web-hosting/>
 
-**Fejlsoegning:** Kan appen ikke naa databasen ved opstart, viser `/quiz` selve
+**Fejlsoegning:** Kan appen ikke naa databasen ved opstart, viser siden selve
 fejlbeskeden som tekst i stedet for en generisk IIS-500. Derudover skriver IIS
-appens konsol-output til `/public_html/quiz/logs/stdout_*.log` (slaaet til i
-`QuizApp/web.config`). `PathBase` (`/quiz`) saettes i `appsettings.Production.json`.
+appens konsol-output til `/quiz/logs/stdout_*.log` (slaaet til i
+`QuizApp/web.config`). Workflowet `diagnose.yml` (koeres manuelt) henter loggen.
 
-Filerne lægges i `/public_html/quiz/`, som er webroden for `villadsclaes.dk/quiz`.
+Appen koerer paa subdomaenet `quiz.villadsclaes.dk`, hvis webrod er mappen
+`/quiz/` i FTP-roden (ikke under `public_html`). Et subdomaene er sit eget
+IIS-site; en almindelig undermappe (fx `public_html/quiz`) virker ikke, fordi IIS
+saa aldrig starter `QuizApp.exe`.
 SCD-publish fylder ca. 107 MB, saa foerste FTP-upload tager et par minutter -
 efterfoelgende deploys sender kun det aendrede.
 
@@ -115,6 +118,6 @@ Foelgende secrets skal vaere sat i repoet (Settings -> Secrets and variables -> 
 
 Ved push til `master` bygger workflowet appen, skriver
 `appsettings.Production.json` ud fra DB-secrets og uploader `publish/` til
-`/public_html/quiz/` via FTP. Workflowet fejler bevidst, hvis `QuizApp.exe`,
+`/quiz/` via FTP. Workflowet fejler bevidst, hvis `QuizApp.exe`,
 `web.config` eller OutOfProcess-indstillingen mangler i publish - saa en
 regression ikke bliver deployet i stilhed.

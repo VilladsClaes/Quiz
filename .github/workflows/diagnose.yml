@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FTP_ROOT: ftp://${{ secrets.FTP_HOST }}
-      FTP: ftp://${{ secrets.FTP_HOST }}/quiz.villadsclaes.dk
+      FTP: ftp://${{ secrets.FTP_HOST }}/quiz
       FTP_AUTH: ${{ secrets.FTP_USER }}:${{ secrets.FTP_PASSWORD }}
       UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36
     steps:

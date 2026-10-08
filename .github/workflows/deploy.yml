@@ -39,7 +39,6 @@ jobs:
             "ConnectionStrings": {
               "DefaultConnection": "Server=${{ secrets.DB_HOST }};Port=3306;Database=${{ secrets.DB_DATABASE }};Uid=${{ secrets.DB_USERNAME }};Pwd=${{ secrets.DB_PASSWORD }};"
             },
-            "PathBase": "/quiz",
             "Database": {
               "AutoDetect": "true"
             },
@@ -79,7 +78,7 @@ jobs:
           port: 21
           protocol: ftp
           timeout: 600000
-          server-dir: /public_html/quiz/
+          server-dir: /quiz/
           local-dir: ./publish/
           exclude: |
             **/.git*
