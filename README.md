@@ -13,7 +13,7 @@ deres besvarelse sammen med navn, e-mail og telefon - uden at oprette en bruger.
 | Sandt/falsk (`TrueFalse`) | To linjer, `*` foran det rigtige |
 | Kort svar (`ShortAnswer`) | Godkendte svar, et pr. linje, `*` foran |
 | Tal (`NumericAnswer`) | Det rigtige tal med `*` foran |
-| Rækkefølge (`Ordering`) | Svarene skrevet i den rigtige orden |
+| Raekkefoelge (`Ordering`) | Svarene skrevet i den rigtige orden |
 | Par-match (`MatchingPairs`) | `venstre\|hoejre` pr. linje |
 | Billedvalg (`ImageChoice`) | Som enkeltvalg, evt. med billede-URL |
 
@@ -30,6 +30,28 @@ QuizApp/
   Views/           Razor-views
 .github/workflows/deploy.yml   Build + FTP-deploy
 ```
+
+## Hosting paa Simply.com / UnoEuro (vigtigt)
+
+Siden ligger paa et Windows-webhotel (IIS 10), og udbyderen har kun .NET-runtimes
+installeret **op til .NET 4.8**. Nyere .NET og .NET Core kan alligevel koere, men
+**kun** som *Self-Contained Deployment* (SCD), hvor appen har sin egen runtime med.
+Derfor goer workflowet to ting, som ikke maa aendres uden grund:
+
+1. **Self-contained publish til `win-x86`** - den runtime udbyderen anbefaler.
+   Uden SCD starter appen ikke, og IIS svarer `500` paa alle stier under `/quiz`.
+2. **`OutOfProcess` hosting** (`<AspNetCoreHostingModel>` i `QuizApp.csproj`).
+   Et webhotel har kun een app-pool, saa InProcess (standard fra .NET 5) kan ikke
+   dele plaen med resten af sitet.
+
+Kilder:
+- <https://www.simply.com/en/support/faq/asp/842-which-net-versions-do-we-support/>
+- <https://www.simply.com/en/support/faq/asp/361-deploy-net-with-self-contained-deployment-scd/>
+- <https://www.simply.com/en/support/faq/asp/827-multiple-asp-net-core-5-apps-on-the-same-web-hosting/>
+
+Filerne lægges i `/public_html/quiz/`, som er webroden for `villadsclaes.dk/quiz`.
+SCD-publish fylder ca. 107 MB, saa foerste FTP-upload tager et par minutter -
+efterfoelgende deploys sender kun det aendrede.
 
 ## Database
 
@@ -78,7 +100,7 @@ Foelgende secrets skal vaere sat i repoet (Settings -> Secrets and variables -> 
 
 | Secret | Indhold |
 | --- | --- |
-| `DB_HOST` | fx `mysql94.unoeuro.com` |
+| `DB_HOST` | fx `mysql94.simply.com` |
 | `DB_DATABASE` | fx `villadsclaes_dk_db` |
 | `DB_USERNAME` | database-bruger |
 | `DB_PASSWORD` | database-adgangskode |
@@ -88,10 +110,6 @@ Foelgende secrets skal vaere sat i repoet (Settings -> Secrets and variables -> 
 
 Ved push til `master` bygger workflowet appen, skriver
 `appsettings.Production.json` ud fra DB-secrets og uploader `publish/` til
-`/public_html/quiz/` via FTP.
-
-> **Vigtigt om hosting:** ASP.NET Core kraever en applikationsserver
-> (fx IIS, Kestrel bag et reverse proxy eller en host med .NET-stoette).
-> Alminidelig dansk shared hosting med FTP + PHP kan normalt ikke koere
-> ASP.NET Core. Tjek derfor hos Simply.com at pakken understoetter .NET 8,
-> foer du forventer at appen svarer paa `villadsclaes.dk/quiz`.
+`/public_html/quiz/` via FTP. Workflowet fejler bevidst, hvis `QuizApp.exe`,
+`web.config` eller OutOfProcess-indstillingen mangler i publish - saa en
+regression ikke bliver deployet i stilhed.

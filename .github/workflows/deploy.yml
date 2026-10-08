@@ -1,5 +1,16 @@
 name: Build og deploy til Simply.com (FTP)
 
+# ---------------------------------------------------------------------------
+# Simply.com / UnoEuro (samme udbyder, Windows-webhotel med IIS 10) har kun
+# .NET-runtimes installeret op til .NET 4.8. Alt nyere .NET koeres via
+# Self-Contained Deployment, hvor appen selv har runtime med.
+# Se: https://www.simply.com/en/support/faq/asp/842-which-net-versions-do-we-support/
+#
+# Derfor publicerer vi self-contained til win-x86 (den runtime Simply.com
+# anbefaler) og med OutOfProcess hosting, saa appen kan dele webhotellet med
+# resten af sitet.
+# ---------------------------------------------------------------------------
+
 on:
   push:
     branches: [ master, main ]
@@ -40,8 +51,23 @@ jobs:
           }
           EOF
 
-      - name: Publish
-        run: dotnet publish QuizApp/QuizApp.csproj -c Release -o publish
+      - name: Publish (self-contained, win-x86)
+        run: >
+          dotnet publish QuizApp/QuizApp.csproj
+          -c Release
+          -r win-x86
+          --self-contained true
+          -p:DebugType=None
+          -p:DebugSymbols=false
+          -o publish
+
+      - name: Kontroller publish-output
+        run: |
+          test -f publish/QuizApp.exe || { echo "QuizApp.exe mangler i publish"; exit 1; }
+          test -f publish/web.config || { echo "web.config mangler i publish"; exit 1; }
+          grep -q 'hostingModel="OutOfProcess"' publish/web.config || { echo "web.config er ikke OutOfProcess"; exit 1; }
+          grep -q 'processPath="\.\\QuizApp.exe"' publish/web.config || { echo "web.config peger ikke paa QuizApp.exe"; exit 1; }
+          echo "publish indeholder $(find publish -type f | wc -l) filer"
 
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -51,6 +77,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           protocol: ftp
+          timeout: 600000
           server-dir: /public_html/quiz/
           local-dir: ./publish/
           exclude: |

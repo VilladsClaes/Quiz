@@ -4,6 +4,14 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <!--
+      Simply.com / UnoEuro (samme udbyder) har kun .NET-runtimes op til 4.8.
+      Nyere .NET koeres via Self-Contained Deployment (saettes i deploy.yml ved
+      publish), og de anbefaler OutOfProcess naar der ligger flere apps paa
+      samme webhotel, da der kun er een app-pool pr. plan.
+    -->
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
   <ItemGroup>
