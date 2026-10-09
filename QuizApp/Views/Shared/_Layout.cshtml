@@ -4,45 +4,59 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Quiz</title>
+    <meta name="description" content="Quiz om alt mellem himmel og jord: alle folkeskolens fag, familie og venner, naturen og menneskets teknologier." />
+    <meta name="theme-color" content="#FCF4E4" />
+    <script>document.documentElement.classList.add('js');</script>
+    <link rel="preload" href="~/fonts/nunito-400-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="~/fonts/fredoka-500-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="~/css/fonts.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/QuizApp.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-primary box-shadow mb-3">
+    @{
+        var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+        var erQuiz = controller == "Quiz";
+        var erAdmin = controller == "Admin";
+    }
+    <header class="site-header">
+        <nav class="navbar navbar-expand-sm">
             <div class="container">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">Quiz</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Vis navigation">
+                <a class="brand" asp-controller="Home" asp-action="Index">
+                    <span class="brand-mark" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" role="img">
+                            <path d="M8.3 8.6a3.7 3.7 0 1 1 4.6 3.6c-.8.3-1.2.9-1.2 1.7v.5" stroke="#fff" stroke-width="2.3" stroke-linecap="round" />
+                            <circle cx="11.7" cy="18.2" r="1.5" fill="#fff" />
+                        </svg>
+                    </span>
+                    <span>Quiz<em>.</em></span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#hojmenu"
+                        aria-controls="hojmenu" aria-expanded="false" aria-label="Vis navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="hojmenu">
+                    <ul class="navbar-nav ms-auto align-items-sm-center">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Quiz" asp-action="Index">Tag en quiz</a>
+                            <a class="nav-link @(erQuiz && !erAdmin ? "is-active" : "")" asp-controller="Quiz" asp-action="Index">Tag en quiz</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Index">Administration</a>
+                                <a class="nav-link @(erAdmin ? "is-active" : "")" asp-controller="Admin" asp-action="Index">Administration</a>
                             </li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item d-flex align-items-center text-white-50 me-3">@User.Identity!.Name</li>
-                            <li class="nav-item">
+                            <li class="nav-item ms-sm-2">
                                 <form asp-controller="Admin" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-light">Log ud</button>
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-ghost btn-sm">Log ud (@User.Identity!.Name)</button>
                                 </form>
                             </li>
                         }
                         else
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Login">Log ind</a>
+                            <li class="nav-item ms-sm-2">
+                                <a class="btn btn-ghost btn-sm" asp-controller="Admin" asp-action="Login">Log ind</a>
                             </li>
                         }
                     </ul>
@@ -50,17 +64,18 @@
             </div>
         </nav>
     </header>
+
     <div class="container">
         @if (TempData["Success"] is string success)
         {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
                 @success
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Luk"></button>
             </div>
         }
         @if (TempData["Error"] is string error)
         {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
                 @error
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Luk"></button>
             </div>
@@ -70,11 +85,27 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-4">
-        <div class="container py-3">
-            &copy; 2026 - Quiz
+    <footer class="site-footer">
+        <div class="container">
+            <div class="inner">
+                <div class="f-brand">
+                    <span class="f-mark" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                            <path d="M8.3 8.6a3.7 3.7 0 1 1 4.6 3.6c-.8.3-1.2.9-1.2 1.7v.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" />
+                            <circle cx="11.7" cy="18.2" r="1.5" fill="#fff" />
+                        </svg>
+                    </span>
+                    Quiz
+                </div>
+                <div class="f-links">
+                    <a asp-controller="Quiz" asp-action="Index">Quizzer</a>
+                    <a asp-controller="Admin" asp-action="Login">Log ind som quiz-master</a>
+                </div>
+                <small>&copy; @DateTime.Now.Year - Quiz &middot; alt mellem himmel og jord</small>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

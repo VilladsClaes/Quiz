@@ -2,54 +2,85 @@
 @{
     ViewData["Title"] = "Resultat";
     var percent = Model.Percent;
-    var badge = percent >= 80 ? "bg-success" : percent >= 50 ? "bg-warning text-dark" : "bg-danger";
+    var temaer = new[] { "skole", "familie", "natur", "teknologi", "samfund" };
+    var tema = "t-" + temaer[(Model.Quiz.Id - 1) % temaer.Length];
+
+    var dom = percent >= 90 ? "Ekspert!" : percent >= 70 ? "Flot klaret!" : percent >= 50 ? "Godt gået!" : "Øv – prøv igen!";
+
+    static string Eller(string? v) => string.IsNullOrWhiteSpace(v) ? "(intet svar)" : v;
 }
 
-<h1 class="mb-3">Resultat: @Model.Quiz.Title</h1>
-
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h2 class="h4 mb-1">@Model.Result.ParticipantName</h2>
-                <p class="text-muted mb-0">
-                    Afleveret @Model.Result.CompletedAt.ToLocalTime().ToString("dd-MM-yyyy HH:mm")
-                </p>
+<section class="section">
+    <div class="result-hero @tema" data-celebrate data-reveal>
+        <div class="ring-wrap" data-ring="@percent">
+            <svg class="ring" viewBox="0 0 120 120" role="img" aria-label="@percent ud af 100 procent rigtigt">
+                <circle class="track" cx="60" cy="60" r="54" />
+                <circle class="value" cx="60" cy="60" r="54" />
+            </svg>
+            <div class="ring-center">
+                <span class="score-num" data-count="@Model.Result.Score">0</span>
+                <span class="score-max">af @Model.Result.TotalPoints point</span>
             </div>
-            <div class="col-md-4 text-md-end">
-                <div class="display-6">@Model.Result.Score / @Model.Result.TotalPoints</div>
-                <span class="badge @badge fs-6">@percent% rigtigt</span>
+        </div>
+
+        <div>
+            <span class="verdict">@dom</span>
+            <h1>@Model.Result.ParticipantName</h1>
+            <p class="meta">
+                @Model.Quiz.Title &middot; @percent% rigtigt &middot; afleveret
+                @Model.Result.CompletedAt.ToLocalTime().ToString("dd-MM-yyyy HH:mm")
+            </p>
+            <div class="result-actions">
+                <a class="btn btn-primary" asp-action="Play" asp-route-id="@Model.Quiz.Id">
+                    Prøv igen
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5A8 8 0 1 0 18.6 16" /><path d="M20 4.5v5h-5" /></svg>
+                </a>
+                <a class="btn btn-ghost" asp-action="Index">Alle quizzer</a>
+                <button type="button" class="btn btn-ghost" data-confetti-again>
+                    Skyd konfetti igen
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 12 4l8 16z" /><path d="M12 4v6" /></svg>
+                </button>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<h2 class="h4 mb-3">Gennemgang</h2>
+<section class="section pt-0">
+    <div class="section-head" data-reveal>
+        <span class="section-kicker">Gennemgang</span>
+        <h2>Hver enkelt (u)rigtighed</h2>
+        <p class="text-muted mb-0">Se hvad du svarede, og hvad det rigtige svar var.</p>
+    </div>
 
-<table class="table table-striped align-middle">
-    <thead>
-        <tr>
-            <th>Spoergsmaal</th>
-            <th>Dit svar</th>
-            <th>Rigtigt svar</th>
-            <th class="text-end">Point</th>
-        </tr>
-    </thead>
-    <tbody>
+    <ol class="review">
+        @{ var rn = 0; }
         @foreach (var row in Model.Rows)
         {
-            <tr>
-                <td>@row.Question.Text</td>
-                <td>@(string.IsNullOrWhiteSpace(row.GivenText) ? "(intet svar)" : row.GivenText)</td>
-                <td>@row.CorrectText</td>
-                <td class="text-end">
-                    <span class="@(row.IsCorrect ? "text-success" : "text-danger")">
-                        @row.Points / @row.MaxPoints
-                    </span>
-                </td>
-            </tr>
+            rn++;
+            <li class="review-item @(row.IsCorrect ? "ok" : "no")" data-reveal style="--d:@((rn * 0.05).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))s">
+                <span class="verdict-ico" aria-hidden="true">@(row.IsCorrect ? "✓" : "✗")</span>
+                <div>
+                    <h3>@row.Question.Text</h3>
+                    <div class="answer-lines">
+                        <div class="line">
+                            <span class="k">Dit svar</span>
+                            <span class="v @(row.IsCorrect ? "good" : "bad")">@Eller(row.GivenText)</span>
+                        </div>
+                        <div class="line">
+                            <span class="k">Rigtigt svar</span>
+                            <span class="v good">@(string.IsNullOrWhiteSpace(row.CorrectText) ? "–" : row.CorrectText)</span>
+                        </div>
+                    </div>
+                    <span class="points-pill">@row.Points / @row.MaxPoints point</span>
+                </div>
+            </li>
         }
-    </tbody>
-</table>
+    </ol>
 
-<a class="btn btn-outline-primary" asp-action="Index">Tilbage til quizzer</a>
+    <div class="mt-4 d-flex gap-2 flex-wrap">
+        <a class="btn btn-primary" asp-action="Index">Tilbage til quizzer</a>
+        <a class="btn btn-ghost" asp-controller="Home" asp-action="Index">Forsiden</a>
+    </div>
+</section>
+
+<canvas id="confetti" aria-hidden="true"></canvas>

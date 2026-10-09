@@ -1,28 +1,91 @@
 @model QuizListViewModel
 @{
     ViewData["Title"] = "Quizzer";
+
+    // Der er endnu ingen kategori i databasen, saa temaet udledes af ordene i
+    // titlen/beskrivelsen - og ellers cykler vi paa de fem verdener.
+    var temaer = new[] { "skole", "familie", "natur", "teknologi", "samfund" };
+
+    static bool Or(string s, params string[] ord)
+    {
+        foreach (var o in ord) { if (s.Contains(o, StringComparison.Ordinal)) return true; }
+        return false;
+    }
+
+    string TemaFor(Quiz q, int i)
+    {
+        var s = (q.Title + " " + (q.Description ?? string.Empty)).ToLowerInvariant();
+        if (Or(s, "skole", "fag", "matematik", "dansk", "sprog", "engelsk", "historie", "geografi", "regne", "stave", "læs")) return "skole";
+        if (Or(s, "familie", "ven", "krop", "mennesk", "følel", "hjem")) return "familie";
+        if (Or(s, "natur", "dyr", "plante", "klima", "vejr", "miljø", "univers", "hav", "skov", "fugl")) return "natur";
+        if (Or(s, "teknologi", "maskin", "opfind", "computer", "energi", "rummet", "robot", "internet")) return "teknologi";
+        if (Or(s, "samfund", "politik", "by", "kultur", "penge", "stat", "lov")) return "samfund";
+        return temaer[i % temaer.Length];
+    }
+
+    var temaNavn = new Dictionary<string, string>
+    {
+        ["skole"] = "Skole & fag",
+        ["familie"] = "Familie & venner",
+        ["natur"] = "Naturen",
+        ["teknologi"] = "Teknologi",
+        ["samfund"] = "Samfund & paratviden"
+    };
+
+    static string Ikon(string tema) => tema switch
+    {
+        "familie" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8.6\" cy=\"7.2\" r=\"3.2\"/><path d=\"M3 20.4c0-3.1 2.5-5.4 5.6-5.4S14.2 17.3 14.2 20.4\"/><circle cx=\"17.4\" cy=\"8.8\" r=\"2.5\"/><path d=\"M15.4 20.4c0-2.7 1.9-4.7 4.6-4.7 1.2 0 2.2.4 3 1.2\"/></svg>",
+        "natur" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20.5C4 12 10.4 5.5 20 4.5c1 9.6-5.4 16-14 16z\"/><path d=\"M4 20.5 14.5 10\"/></svg>",
+        "teknologi" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"3.3\"/><path d=\"M12 2.6v3M12 18.4v3M21.4 12h-3M5.6 12h-3M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1M18.6 18.6l-2.1-2.1M7.5 7.5 5.4 5.4\"/></svg>",
+        "samfund" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2.5 20.5h19\"/><path d=\"M5.5 20.5V9.4l5.2-3.2v14.3\"/><path d=\"M14 20.5v-8.6l4.6 2.4v6.2\"/><path d=\"M8 12.2h.01M8 15.6h.01M16.4 15.4h.01\"/></svg>",
+        _ => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 5.4c2.7-1 5.5-1 8.1.7v13c-2.6-1.7-5.4-1.7-8.1-.7z\"/><path d=\"M21 5.4c-2.7-1-5.5-1-8.1.7v13c2.6-1.7 5.4-1.7 8.1-.7z\"/></svg>"
+    };
 }
 
-<h1 class="mb-4">Vaelg en quiz</h1>
-
-@if (Model.Quizzes.Count == 0)
-{
-    <div class="alert alert-info">Der er endnu ingen aktive quizzer.</div>
-}
-else
-{
-    <div class="row g-3">
-        @foreach (var quiz in Model.Quizzes)
-        {
-            <div class="col-md-6">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body d-flex flex-column">
-                        <h2 class="h5 card-title">@quiz.Title</h2>
-                        <p class="card-text flex-grow-1">@quiz.Description</p>
-                        <a class="btn btn-primary align-self-start" asp-action="Play" asp-route-id="@quiz.Id">Start quiz</a>
-                    </div>
-                </div>
-            </div>
-        }
+<section class="section">
+    <div class="section-head" data-reveal>
+        <span class="section-kicker">Vælg din udfordring</span>
+        <h1>Vælg en quiz</h1>
+        <p class="text-muted mb-0">
+            Fem verdener, otte spørgsmålstyper og point med det samme. Du bestemmer selv,
+            hvor mange gange du vil prøve.
+        </p>
     </div>
-}
+
+    @if (Model.Quizzes.Count == 0)
+    {
+        <div class="alert alert-info" role="status">Der er endnu ingen aktive quizzer. Kig forbi igen snart.</div>
+    }
+    else
+    {
+        var i = -1;
+        <div class="quiz-grid">
+            @foreach (var quiz in Model.Quizzes)
+            {
+                i++;
+                var tema = TemaFor(quiz, i);
+                var antal = quiz.Questions.Count;
+                <div class="quiz-card t-@tema" data-reveal style="--d:@((i * 0.07).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture))s">
+                    <span class="quiz-icon" aria-hidden="true">@Html.Raw(Ikon(tema))</span>
+                    <h2>@quiz.Title</h2>
+                    @if (!string.IsNullOrWhiteSpace(quiz.Description))
+                    {
+                        <p>@quiz.Description</p>
+                    }
+                    else
+                    {
+                        <p>En quiz med blandede spørgsmål.</p>
+                    }
+                    <div class="quiz-meta">
+                        <span class="tag">@antal spørgsmål</span>
+                        <span class="tag tag-plain">@temaNavn[tema]</span>
+                    </div>
+                    <a class="btn btn-accent" asp-action="Play" asp-route-id="@quiz.Id">
+                        Start quiz
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</section>

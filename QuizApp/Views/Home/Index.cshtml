@@ -2,23 +2,282 @@
     ViewData["Title"] = "Forside";
 }
 
-<div class="p-5 mb-4 bg-light rounded-3 border">
-    <h1 class="display-5 fw-bold">Quiz</h1>
-    <p class="lead">
-        Tag en quiz og se hvor godt du klarer den. Quizzerne kan indeholde mange forskellige
-        spoergsmaaltyper: enkeltvalg, flere svar, sandt/falsk, kort svar, tal, rækkefølge,
-        par-match og billedvalg.
-    </p>
-    <a class="btn btn-primary btn-lg" asp-controller="Quiz" asp-action="Index">Se quizzer</a>
-</div>
+<section class="hero">
+    <div class="floaties" data-floaties aria-hidden="true">
+        <div class="floaty f1" data-depth="1.4">
+            <span class="bob">
+                <svg width="74" height="74" viewBox="0 0 74 74">
+                    <rect x="6" y="6" width="62" height="62" rx="17" fill="#fff" stroke="#1B2A4A" stroke-width="4" />
+                    <circle cx="25" cy="25" r="5.4" fill="#FF6B6B" />
+                    <circle cx="49" cy="49" r="5.4" fill="#FF6B6B" />
+                    <circle cx="37" cy="37" r="5.4" fill="#FF6B6B" />
+                </svg>
+            </span>
+        </div>
+        <div class="floaty f2" data-depth="-1">
+            <span class="bob">
+                <svg width="68" height="68" viewBox="0 0 68 68">
+                    <rect x="4" y="4" width="60" height="60" rx="15" fill="#F2B01E" stroke="#1B2A4A" stroke-width="4" />
+                    <text x="34" y="47" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="38" font-weight="700" fill="#1B2A4A">?</text>
+                </svg>
+            </span>
+        </div>
+        <div class="floaty f3" data-depth="1">
+            <span class="bob">
+                <svg width="62" height="62" viewBox="0 0 62 62">
+                    <rect x="4" y="4" width="54" height="54" rx="14" fill="#2FA86B" stroke="#1B2A4A" stroke-width="4" />
+                    <path d="M17 45c0-14 10-24 28-26 2 18-10 28-28 26z" fill="#fff" />
+                    <path d="M17 45 41 22" stroke="#1B2A4A" stroke-width="3" stroke-linecap="round" />
+                </svg>
+            </span>
+        </div>
+        <div class="floaty f4" data-depth="-0.7">
+            <span class="bob">
+                <svg width="70" height="70" viewBox="0 0 70 70">
+                    <rect x="5" y="5" width="60" height="60" rx="16" fill="#3D6BF5" stroke="#1B2A4A" stroke-width="4" />
+                    <circle cx="35" cy="24" r="8" fill="#fff" />
+                    <path d="M20 54c0-8 7-14 15-14s15 6 15 14" fill="#fff" />
+                </svg>
+            </span>
+        </div>
+    </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <h2 class="h4">For deltagere</h2>
-        <p>Vaelg en quiz, svar paa spoergsmaalene og aflever med dit navn, e-mail og telefon, saa resultatet kan ses med det samme.</p>
+    <div class="hero-grid">
+        <div>
+            <span class="hero-eyebrow"><span class="dot"></span> <b>Paratviden</b> for hele familien</span>
+            <h1 class="hero-title">
+                <span data-kinetic>Quiz om alt mellem</span>
+                <span class="hl" data-kinetic>himmel og jord</span>
+            </h1>
+            <p class="lead">
+                Alle folkeskolens fag, viden om venner og familie, naturen og menneskets teknologier.
+                Vælg en quiz, svar på spørgsmålene, og se dit resultat med det samme.
+            </p>
+            <div class="hero-cta">
+                <a class="btn btn-primary btn-lg" asp-controller="Quiz" asp-action="Index">Se quizzer</a>
+                <a class="btn btn-ghost btn-lg" asp-controller="Admin" asp-action="Login">Jeg er quiz-master</a>
+            </div>
+            <div class="hero-stats">
+                <div><b>8</b><span>spørgsmålstyper</span></div>
+                <div><b>5</b><span>tema-verdener</span></div>
+                <div><b>&infin;</b><span>gange du kan prøve igen</span></div>
+            </div>
+        </div>
+
+        <div class="hero-board" data-reveal>
+            <div class="hero-board-track" aria-hidden="true">
+                <span>1</span><span>?</span><span>3</span><span>&#10003;</span>
+                <span>&#9733;</span><span>6</span><span>?</span><span>8</span>
+                <span>9</span><span>&#10003;</span><span>?</span><span>12</span>
+                <span>&#9733;</span><span>?</span><span>15</span><span>&#10003;</span>
+            </div>
+            <div class="hero-board-caption">
+                <span>Hvert spørgsmål er et felt p&aring; sporet</span>
+                <svg class="meeple" viewBox="0 0 32 32" aria-hidden="true">
+                    <circle cx="16" cy="8" r="5.4" fill="#2F5BEA" stroke="#1B2A4A" stroke-width="2" />
+                    <path d="M16 13.4c5.2 0 9.2 3.7 9.2 8.4 0 3.4-2.5 5.6-6.2 5.6H13c-3.7 0-6.2-2.2-6.2-5.6 0-4.7 4-8.4 9.2-8.4z" fill="#2F5BEA" stroke="#1B2A4A" stroke-width="2" />
+                </svg>
+            </div>
+        </div>
     </div>
-    <div class="col-md-6">
-        <h2 class="h4">For quiz-master</h2>
-        <p>Log ind i <a asp-controller="Admin" asp-action="Login">administrationen</a> for at oprette og redigere quizzer og spoergsmaal.</p>
+</section>
+
+<section class="section">
+    <div class="section-head" data-reveal>
+        <span class="section-kicker">Fem verdener</span>
+        <h2>Alt mellem himmel og jord &ndash; i fem temaer</h2>
+        <p class="text-muted mb-0">Hold musen over (eller tryk p&aring;) en klods og vend den som et huskespil.</p>
     </div>
-</div>
+
+    <div class="flip-grid">
+        <a class="flip t-skole" asp-controller="Quiz" asp-action="Index" data-reveal style="--d:.0s">
+            <div class="flip-inner">
+                <div class="flip-face flip-front">
+                    <span class="icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 5.4c2.7-1 5.5-1 8.1.7v13c-2.6-1.7-5.4-1.7-8.1-.7z" />
+                            <path d="M21 5.4c-2.7-1-5.5-1-8.1.7v13c2.6-1.7 5.4-1.7 8.1-.7z" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3>Skole &amp; fag</h3>
+                        <span class="hint">Vend klodsen</span>
+                    </div>
+                </div>
+                <div class="flip-face flip-back">
+                    <p>Matematik, dansk, sprog, historie og alle de andre fag fra folkeskolen.</p>
+                    <span class="go">
+                        Se quizzer
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+                    </span>
+                </div>
+            </div>
+        </a>
+
+        <a class="flip t-familie" asp-controller="Quiz" asp-action="Index" data-reveal style="--d:.08s">
+            <div class="flip-inner">
+                <div class="flip-face flip-front">
+                    <span class="icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="8.6" cy="7.2" r="3.2" />
+                            <path d="M3 20.4c0-3.1 2.5-5.4 5.6-5.4S14.2 17.3 14.2 20.4" />
+                            <circle cx="17.4" cy="8.8" r="2.5" />
+                            <path d="M15.4 20.4c0-2.7 1.9-4.7 4.6-4.7 1.2 0 2.2.4 3 1.2" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3>Familie &amp; venner</h3>
+                        <span class="hint">Vend klodsen</span>
+                    </div>
+                </div>
+                <div class="flip-face flip-back">
+                    <p>Menneskene omkring dig: familie, venskaber, krop og hverdagen.</p>
+                    <span class="go">
+                        Se quizzer
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+                    </span>
+                </div>
+            </div>
+        </a>
+
+        <a class="flip t-natur" asp-controller="Quiz" asp-action="Index" data-reveal style="--d:.16s">
+            <div class="flip-inner">
+                <div class="flip-face flip-front">
+                    <span class="icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 20.5C4 12 10.4 5.5 20 4.5c1 9.6-5.4 16-14 16z" />
+                            <path d="M4 20.5 14.5 10" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3>Naturen</h3>
+                        <span class="hint">Vend klodsen</span>
+                    </div>
+                </div>
+                <div class="flip-face flip-back">
+                    <p>Dyr, planter, vejr, klima og hele den levende verden udenfor.</p>
+                    <span class="go">
+                        Se quizzer
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+                    </span>
+                </div>
+            </div>
+        </a>
+
+        <a class="flip t-teknologi" asp-controller="Quiz" asp-action="Index" data-reveal style="--d:.24s">
+            <div class="flip-inner">
+                <div class="flip-face flip-front">
+                    <span class="icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3.3" />
+                            <path d="M12 2.6v3M12 18.4v3M21.4 12h-3M5.6 12h-3M18.6 5.4l-2.1 2.1M7.5 16.5l-2.1 2.1M18.6 18.6l-2.1-2.1M7.5 7.5 5.4 5.4" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3>Teknologi</h3>
+                        <span class="hint">Vend klodsen</span>
+                    </div>
+                </div>
+                <div class="flip-face flip-back">
+                    <p>Fra hjulet til rumfarten: menneskets opfindelser, maskiner og grej.</p>
+                    <span class="go">
+                        Se quizzer
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+                    </span>
+                </div>
+            </div>
+        </a>
+
+        <a class="flip t-samfund" asp-controller="Quiz" asp-action="Index" data-reveal style="--d:.32s">
+            <div class="flip-inner">
+                <div class="flip-face flip-front">
+                    <span class="icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2.5 20.5h19" />
+                            <path d="M5.5 20.5V9.4l5.2-3.2v14.3" />
+                            <path d="M14 20.5v-8.6l4.6 2.4v6.2" />
+                            <path d="M8 12.2h.01M8 15.6h.01M16.4 15.4h.01" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3>Samfund &amp; paratviden</h3>
+                        <span class="hint">Vend klodsen</span>
+                    </div>
+                </div>
+                <div class="flip-face flip-back">
+                    <p>By, politik, kultur og det, alle b&oslash;r vide om at bo sammen.</p>
+                    <span class="go">
+                        Se quizzer
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6" /></svg>
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-head" data-reveal>
+        <span class="section-kicker">S&aring;dan virker det</span>
+        <h2>Tre felter, s&aring; er du i m&aring;l</h2>
+    </div>
+    <div class="how">
+        <div class="how-step" data-reveal style="--d:.0s">
+            <h3>V&aelig;lg en quiz</h3>
+            <p>Find den quiz, der passer til dig, og tryk &laquo;Start quiz&raquo;.</p>
+        </div>
+        <div class="how-step" data-reveal style="--d:.1s">
+            <h3>Tag felt for felt</h3>
+            <p>Du farer frem ad br&aelig;tets spor, mens din brik hopper med fra sp&oslash;rgsm&aring;l til sp&oslash;rgsm&aring;l.</p>
+        </div>
+        <div class="how-step" data-reveal style="--d:.2s">
+            <h3>Se resultatet</h3>
+            <p>Pointene t&aelig;lles op, og du ser pr&aelig;cis, hvilke svar der var rigtige.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-head" data-reveal>
+        <span class="section-kicker">Otte m&aring;der at svare p&aring;</span>
+        <h2>Sp&oslash;rgsm&aring;l i alle former</h2>
+        <p class="text-muted mb-0">En quiz kan blande alle typerne, s&aring; ingen to quizzer er ens.</p>
+    </div>
+    <div class="chips" data-reveal>
+        <span class="chip" style="--chipc:var(--t-skole)">Enkeltvalg</span>
+        <span class="chip" style="--chipc:var(--t-familie)">Flere svar</span>
+        <span class="chip" style="--chipc:var(--t-natur)">Sandt / falsk</span>
+        <span class="chip" style="--chipc:var(--t-teknologi)">Kort svar</span>
+        <span class="chip" style="--chipc:var(--t-samfund)">Tal</span>
+        <span class="chip" style="--chipc:var(--t-skole)">R&aelig;kkef&oslash;lge</span>
+        <span class="chip" style="--chipc:var(--t-familie)">Par-match</span>
+        <span class="chip" style="--chipc:var(--t-natur)">Billedvalg</span>
+    </div>
+</section>
+
+<section class="section">
+    <div class="info-cards">
+        <div class="info-card" data-reveal>
+            <h3>
+                <span class="badge-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4" /><path d="M4.5 20.5c0-4 3.4-7 7.5-7s7.5 3 7.5 7" />
+                    </svg>
+                </span>
+                For deltagere
+            </h3>
+            <p>V&aelig;lg en quiz, svar p&aring; sp&oslash;rgsm&aring;lene og aflever med dit navn, s&aring; kan resultatet ses med det samme.</p>
+        </div>
+        <div class="info-card" data-reveal style="--d:.1s">
+            <h3>
+                <span class="badge-ico" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3.5 14.6 9l6 .9-4.3 4.2 1 6-5.3-2.8L6.7 20l1-6L3.4 9.9 9.4 9z" />
+                    </svg>
+                </span>
+                For quiz-master
+            </h3>
+            <p>Log ind i <a asp-controller="Admin" asp-action="Login">administrationen</a> for at oprette og redigere quizzer og sp&oslash;rgsm&aring;l.</p>
+        </div>
+    </div>
+</section>

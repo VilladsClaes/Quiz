@@ -16,9 +16,11 @@ public class QuizController : Controller
 
     public async Task<IActionResult> Index()
     {
+        // Questions hentes med, saa kortene kan vise antal spoergsmaal.
         var quizzes = await _db.Quizzes
             .Where(q => q.IsActive)
             .OrderBy(q => q.Title)
+            .Include(q => q.Questions)
             .ToListAsync();
 
         return View(new QuizListViewModel { Quizzes = quizzes });
