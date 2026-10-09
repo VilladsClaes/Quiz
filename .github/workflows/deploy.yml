@@ -69,6 +69,38 @@ jobs:
           grep -q 'processPath="\.\\QuizApp.exe"' publish/web.config || { echo "web.config peger ikke paa QuizApp.exe"; exit 1; }
           echo "publish indeholder $(find publish -type f | wc -l) filer"
 
+      # IIS-laas: FTP'eren kan ikke overskrive filer, som den koerende
+      # self-contained app holder laast (550 "being used by another process").
+      # app_offline.htm faar ANCM til at lukke worker-processen og frigive
+      # laasene foer upload.
+      - name: Sæt app offline (frigiv fillåse)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          cat > app_offline.htm <<'HTML'
+          <!DOCTYPE html>
+          <html lang="da"><head><meta charset="utf-8">
+          <meta http-equiv="refresh" content="10">
+          <title>Opdatering i gang</title></head>
+          <body><h1>Opdatering i gang…</h1><p>Siden er tilbage om et øjeblik.</p></body>
+          </html>
+          HTML
+          curl -sS -T app_offline.htm --user "$FTP_USER:$FTP_PASSWORD" \
+            "ftp://$FTP_HOST/quiz/app_offline.htm" --ftp-create-dirs
+          echo "app_offline.htm uploaded - venter paa at appen lukker"
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
+          for i in $(seq 1 24); do
+            body=$(curl -s -A "$UA" --max-time 15 "https://quiz.villadsclaes.dk/" || true)
+            if printf '%s' "$body" | grep -qi 'Opdatering i gang'; then
+              echo "appen er offline (forsog $i)"; exit 0
+            fi
+            sleep 5
+          done
+          echo "ADVARSEL: app_offline.htm ikke synlig endnu - fortsaetter alligevel"
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -79,7 +111,31 @@ jobs:
           protocol: ftp
           timeout: 600000
           server-dir: /quiz/
+          delete: false
           local-dir: ./publish/
           exclude: |
             **/.git*
             **/.git*/**
+
+      - name: Tag app online igen
+        if: always()
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          set -uo pipefail
+          curl -sS -Q "DELE app_offline.htm" --user "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/quiz/" || true
+          if curl -s --user "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/quiz/" --list-only | grep -q '^app_offline.htm$'; then
+            echo "relativ DELE slog ikke til - proev absolut sti"
+            curl -sS -Q "DELE /quiz/app_offline.htm" --user "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/quiz/" || true
+          fi
+          left=$(curl -s --user "$FTP_USER:$FTP_PASSWORD" "ftp://$FTP_HOST/quiz/" --list-only | grep -c '^app_offline.htm$' || true)
+          if [ "${left:-0}" != "0" ]; then
+            echo "::error::Kunne ikke fjerne app_offline.htm - siten er offline!"
+            exit 1
+          fi
+          echo "app_offline.htm fjernet"
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
+          sleep 5
+          curl -s -A "$UA" -o /dev/null -w "live / = %{http_code}\n" "https://quiz.villadsclaes.dk/" || true
